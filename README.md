@@ -15,5 +15,5 @@ of the resultant license implications of your submissions.
 
 ## Controls
 
-- [Colour Picker]()
-- [Email Field]()
+- [Colour Picker](src/docs/colour_picker.md)
+- [Email Field](src/docs/email_field.md)
