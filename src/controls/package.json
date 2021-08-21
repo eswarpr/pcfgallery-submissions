@@ -1,5 +1,5 @@
 {
-  "name": "pcf-power-controls-colour-picker",
+  "name": "pcf-power-controls",
   "version": "0.1.5",
   "description": "Project containing your PowerApps Component Framework (PCF) control.",
   "scripts": {
