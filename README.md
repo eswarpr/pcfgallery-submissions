@@ -17,3 +17,7 @@ of the resultant license implications of your submissions.
 
 - [Colour Picker](src/docs/colour_picker.md)
 - [Email Field](src/docs/email_field.md)
+
+## Releases
+
+- [v0.1.6](releases/tag/0.1.6)
