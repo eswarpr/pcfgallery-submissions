@@ -1,0 +1,113 @@
+diff --git a/node_modules/pcf-scripts/ManifestSchema.json b/node_modules/pcf-scripts/ManifestSchema.json
+index 1fd4903..bab0451 100644
+--- a/node_modules/pcf-scripts/ManifestSchema.json
++++ b/node_modules/pcf-scripts/ManifestSchema.json
+@@ -466,7 +466,7 @@
+                 "$": {
+                     "type": "object",
+                     "properties": {
+-                        "path": { "type": "string", "pattern": "^.+\\.ts$", "minLength": 1 },
++                        "path": { "type": "string", "pattern": "^.+\\.(ts|tsx)$", "minLength": 1 },
+                         "order": { "$ref": "#/definitions/orderType" }
+                     },
+                     "required": ["path", "order"],
+diff --git a/node_modules/pcf-scripts/buildContext.js b/node_modules/pcf-scripts/buildContext.js
+index 4e6e37f..527a0eb 100644
+--- a/node_modules/pcf-scripts/buildContext.js
++++ b/node_modules/pcf-scripts/buildContext.js
+@@ -61,7 +61,10 @@ class BuildContext {
+             this._diag.pushA(diagnosticMessages_generated_1.strings.control_manifest_not_found, [constants.MANIFEST_INPUT_FILE_NAME]);
+             return Promise.reject();
+         }
+-        const results = this.controls.map((value) => { return callback(value); });
++        const results = this.controls
++            .filter(value => !!!this.config.debugTarget || (!!this.config.debugTarget 
++                && this.config.debugTarget === value.controlPath))
++            .map((value) => { return callback(value); });
+         return Promise.all(results);
+     }
+     // maps the specified callback for each design map under the control root
+diff --git a/node_modules/pcf-scripts/manifestTypesGenerator.js b/node_modules/pcf-scripts/manifestTypesGenerator.js
+index 2e93aa7..1a122b1 100644
+--- a/node_modules/pcf-scripts/manifestTypesGenerator.js
++++ b/node_modules/pcf-scripts/manifestTypesGenerator.js
+@@ -21,6 +21,13 @@ class ManifestTypesGenerator {
+         this.dataSetNames = [];
+         this.internalImportsRequired = {};
+     }
++    reset() {
++        this.parameters = {};
++        this.outputs = {};
++        this.dataSetNames = [];
++        this.typeGroups = {};
++        this.internalImportsRequired = {};
++    }
+     getFieldType(type) {
+         var _a;
+         const prefix = type.split('.')[0];
+diff --git a/node_modules/pcf-scripts/taskRunner.js b/node_modules/pcf-scripts/taskRunner.js
+index 3639c74..b7f4156 100644
+--- a/node_modules/pcf-scripts/taskRunner.js
++++ b/node_modules/pcf-scripts/taskRunner.js
+@@ -156,7 +156,9 @@ class TaskRunner {
+             'controlsRoot': '.',
+             'outDir': constants.DEFAULT_OUT_DIR,
+             'buildMode': constants.DEFAULT_BUILD_MODE,
+-            'locale': constants.DEFAULT_LANGUAGE
++            'locale': constants.DEFAULT_LANGUAGE,
++            'debugTarget': undefined,
++            'serverConfig': undefined
+         };
+         if (this._args && this._args.buildMode) {
+             config.buildMode = this._args.buildMode;
+@@ -179,6 +181,15 @@ class TaskRunner {
+         else if (this._config && this._config.locale) {
+             config.locale = this._config.locale;
+         }
++        
++        if (this._args && this._args.debugTarget) {
++            config.debugTarget = this._args.debugTarget;
++        }
++
++        if(this._args && this._args.serverConfig) {
++            config.serverConfig = this._args.serverConfig;
++        }
++
+         this._buildContext = new buildContext_1.BuildContext(this._diagnostics, config);
+     }
+     getTaskGroup(taskGroups) {
+diff --git a/node_modules/pcf-scripts/tasks/manifestTypesTask.js b/node_modules/pcf-scripts/tasks/manifestTypesTask.js
+index d3e53da..874fc21 100644
+--- a/node_modules/pcf-scripts/tasks/manifestTypesTask.js
++++ b/node_modules/pcf-scripts/tasks/manifestTypesTask.js
+@@ -25,6 +25,7 @@ class GenerateManifestTypesTask {
+     }
+     // Generates ManifestTypes.d.ts file from control manifest
+     generateManifestTypes(context) {
++        this._manifestTypesGenerator.reset();
+         const comment = `/*\n*This is auto generated from the ControlManifest.Input.xml file\n*/\n\n` +
+             `// Define IInputs and IOutputs Type. They should match with ControlManifest.\n`;
+         const code = comment + this._manifestTypesGenerator.generateManifestTypes(context.getControlManifest().getManifestData());
+diff --git a/node_modules/pcf-scripts/tasks/startTask.js b/node_modules/pcf-scripts/tasks/startTask.js
+index 454bea3..788adfb 100644
+--- a/node_modules/pcf-scripts/tasks/startTask.js
++++ b/node_modules/pcf-scripts/tasks/startTask.js
+@@ -29,9 +29,16 @@ class StartHarnessTask {
+             return Promise.reject();
+         }
+         return new Promise((resolve, reject) => {
+-            const outputDir = path.join(outDir, controls[0]);
++            let control = undefined;
++            if (context.config && context.config.debugTarget) {
++                control = context.config.debugTarget;
++            }
++            if(!!!control) {
++                control = controls[0];
++            }
++            const outputDir = path.join(outDir, control);
+             // spawn a child process of pcf-start to launch the harness locally
+-            const pcfStartCmd = child_process_1.exec(`node node_modules/pcf-start/bin/pcf-start.js ${this._watchOn ? '--watch' : ''} --codePath ${outputDir}`);
++            const pcfStartCmd = child_process_1.exec(`node node_modules/pcf-start/bin/pcf-start.js ${this._watchOn ? '--watch' : ''} --codePath ${outputDir} ${context.config.serverConfig ? '--serverConfig ' + context.config.serverConfig : ''}`);
+             if (!pcfStartCmd) {
+                 return reject(`Cannot launch test harness for: ${outputDir}`);
+             }

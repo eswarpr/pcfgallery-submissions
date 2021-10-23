@@ -5,7 +5,9 @@
 // Define IInputs and IOutputs Type. They should match with ControlManifest.
 export interface IInputs {
     value: ComponentFramework.PropertyTypes.StringProperty;
+    isHighContrast: ComponentFramework.PropertyTypes.TwoOptionsProperty;
 }
 export interface IOutputs {
     value?: string;
+    isHighContrast?: boolean;
 }

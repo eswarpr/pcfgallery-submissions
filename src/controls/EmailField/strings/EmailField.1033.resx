@@ -145,4 +145,20 @@
     <value>Specify the maximum number of e-mail addresses that can be selected</value>
     <comment/>
   </data>
+  <data name="EmailField_TagPicker_RemoveButtonAriaLabel" xml:space="preserve">
+    <value>Remove selected e-mail address</value>
+    <comment/>
+  </data>
+  <data name="EmailField_TagPicker_SelectionAriaLabel" xml:space="preserve">
+    <value>Selected e-mail address</value>
+    <comment/>
+  </data>
+  <data name="EmailField_CopyButton_AriaLabel" xml:space="preserve">
+    <value>Copy these e-mail addresses to clipboard</value>
+    <comment/>
+  </data>
+  <data name="EmailField_ComposeButton_AriaLabel" xml:space="preserve">
+    <value>Compose an e-mail for these recipients</value>
+    <comment/>
+  </data>
 </root>

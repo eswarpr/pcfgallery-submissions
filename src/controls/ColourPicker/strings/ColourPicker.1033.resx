@@ -133,4 +133,24 @@
     <value>Colour Picker</value>
     <comment/>
   </data>
+  <data name="ColourPicker_TextField_AriaLabel" xml:space="preserve">
+    <value>Selected colour</value>
+    <comment/>
+  </data>
+  <data name="ColourPicker_PickerButton_AriaLabel" xml:space="preserve">
+    <value>Pick colour</value>
+    <comment/>
+  </data>
+  <data name="ColourPicker_Picker_SelectButton_AriaLabel" xml:space="preserve">
+    <value>Select colour</value>
+    <comment/>
+  </data>
+  <data name="ColourPicker_Picker_CancelButton_AriaLabel" xml:space="preserve">
+    <value>Cancel picker</value>
+    <comment/>
+  </data>
+  <data name="ColourPicker_Picker_WindowTitle_Label" xml:space="preserve">
+    <value>Pick a colour</value>
+    <comment/>
+  </data>
 </root>

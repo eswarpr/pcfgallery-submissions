@@ -1,63 +1,67 @@
 import {
   ColorPicker,
+  DefaultButton,
+  DirectionalHint,
+  FocusTrapCallout,
+  FontWeights,
+  getColorFromString,
+  IButtonStyles,
+  IColor,
+  IconButton,
+  isDark,
+  IStackStyles,
+  IStackTokens,
+  ITextFieldProps,
+  ITextFieldStyles,
+  ITextStyles,
+  mergeStyles,
+  PrimaryButton,
   Stack,
   Text,
-  Callout,
-  mergeStyles,
-  useTheme,
-  isDark,
-  getShade,
-  getColorFromString,
-  Icon,
   TextField,
-  ITextFieldStyles,
-  ITextFieldProps,
-  FocusTrapCallout,
-  DirectionalHint,
-  IconButton,
-  PrimaryButton,
-  DefaultButton,
-  IButtonStyles,
-  IStackTokens,
-  IStackStyles,
-  ITextStyles,
-  FontWeights,
-  IColor,
-  Shade,
+  useTheme,
 } from "@fluentui/react";
 import { useBoolean, useId } from "@fluentui/react-hooks";
-import { PCFControlContextService } from "pcf-react";
 import * as React from "react";
-import { IInputs, IOutputs } from "../generated/ManifestTypes";
+import { ControlContext } from "../../shared";
+import { IInputs } from "../generated/ManifestTypes";
+import { IColourPickerComponentProps } from "./ColourPickerComponent.types";
 
-const Context = React.createContext<PCFControlContextService | undefined>(
-  undefined
-);
-
-interface IColourPickerComponentBaseProps {
-  parameters?: IInputs;
-  setParameters?: (values: IOutputs) => void;
-  readonly?: boolean;
-  width?: number;
-  height?: number;
-}
-
-const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
-  parameters,
-  setParameters,
+const ColourPickerComponent: React.FC<IColourPickerComponentProps> = ({
   width,
   height,
-  readonly,
 }) => {
+  const service = React.useContext(ControlContext);
   const [isOpen, { toggle: toggleOpen }] = useBoolean(false);
   const [newValue, setNewValue] = React.useState<string>();
   const [textColour, setTextColour] = React.useState<string>();
   const [pickedColor, setPickedColor] = React.useState<IColor>();
-  const theme = useTheme();
   const textFieldId = useId();
+  const theme = useTheme();
+
+  const parameters = service?.getParameters<IInputs>();
+  const setParameters = service?.setParameters.bind(service);
+  const context = service?.getFormContext();
+  const resources = context?.resources;
+
+  const textBoxAriaLabel = resources.getString(
+    "ColourPicker_TextField_AriaLabel"
+  );
+  const pickerButtonAriaLabel = resources.getString(
+    "ColourPicker_PickerButton_AriaLabel"
+  );
+  const selectButtonAriaLabel = resources.getString(
+    "ColourPicker_Picker_SelectButton_AriaLabel"
+  );
+  const cancelButtonAriaLabel = resources.getString(
+    "ColourPicker_Picker_CancelButton_AriaLabel"
+  );
+  const pickerWindowTitleLabel = resources.getString(
+    "ColourPicker_Picker_WindowTitle_Label"
+  );
 
   React.useEffect(() => {
-    setNewValue(parameters?.value?.raw || theme.semanticColors.inputBackground);
+    setNewValue(parameters?.value?.raw || undefined);
   }, [parameters?.value, theme]);
 
   const root = mergeStyles({});
@@ -69,10 +73,9 @@ const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
         return;
       }
 
-      if(isDark(color_)) {
+      if (isDark(color_)) {
         setTextColour(theme.palette.white);
-      }
-      else {
+      } else {
         setTextColour(theme.palette.black);
       }
     }
@@ -80,11 +83,11 @@ const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
 
   const textFieldStyles: Partial<ITextFieldStyles> = {
     fieldGroup: {
-      height: `${height}px`
+      height: `${height}px`,
     },
     field: {
-      backgroundColor: newValue,
-      color: textColour,
+      backgroundColor: newValue || theme.semanticColors.inputBackground,
+      color: textColour || theme.semanticColors.inputText,
       textAlign: "center",
     },
     suffix: {
@@ -100,7 +103,7 @@ const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
     rootHovered: {
       height: `${!!height ? height - 4 : 30}px`,
       color: theme.palette.black,
-    }
+    },
   };
 
   const rootStackTokens: IStackTokens = {
@@ -145,6 +148,7 @@ const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
         }}
         styles={buttonStyles}
         onClick={handlePickButtonClick}
+        ariaLabel={pickerButtonAriaLabel}
       ></IconButton>
     );
   };
@@ -171,6 +175,7 @@ const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
         styles={textFieldStyles}
         onRenderSuffix={onRenderSuffix}
         id={textFieldId}
+        ariaLabel={textBoxAriaLabel}
       ></TextField>
       {!!isOpen && (
         <FocusTrapCallout
@@ -183,23 +188,31 @@ const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
           <Stack tokens={rootStackTokens}>
             <Stack horizontal styles={titleStackStyles}>
               <Text variant="medium" styles={titleStyles}>
-                Pick a colour
+                {pickerWindowTitleLabel}
               </Text>
             </Stack>
-            {!!newValue && (
-              <ColorPicker
-                alphaType="none"
-                onChange={(ev, color) => setPickedColor(color)}
-                color={pickedColor || "#fff"}
-              ></ColorPicker>
-            )}
+            <ColorPicker
+              alphaType="none"
+              onChange={(ev, color) => setPickedColor(color)}
+              color={pickedColor || "#fff"}
+            ></ColorPicker>
             <Stack
               horizontal
               tokens={commandStackTokens}
               styles={commandStackStyles}
             >
-              <PrimaryButton onClick={handleColourSelect}>Select</PrimaryButton>
-              <DefaultButton onClick={() => toggleOpen()}>Cancel</DefaultButton>
+              <PrimaryButton
+                onClick={handleColourSelect}
+                ariaLabel={selectButtonAriaLabel}
+              >
+                Select
+              </PrimaryButton>
+              <DefaultButton
+                onClick={() => toggleOpen()}
+                ariaLabel={cancelButtonAriaLabel}
+              >
+                Cancel
+              </DefaultButton>
             </Stack>
           </Stack>
         </FocusTrapCallout>
@@ -208,38 +221,4 @@ const ColourPickerComponentBase: React.FC<IColourPickerComponentBaseProps> = ({
   );
 };
 
-export interface IColourPickerComponentProps {
-  width?: number;
-  height?: number;
-  service?: PCFControlContextService;
-}
-
-const Component: React.FC<IColourPickerComponentProps> = ({
-  width,
-  height,
-  service,
-}) => {
-  return (
-    <Context.Provider value={service}>
-      <Context.Consumer>
-        {(service) => {
-          const params_ = service?.getParameters<IInputs>();
-          const setParams_ = service?.setParameters.bind(service);
-          const readonly = service?.getIsControlReadOnly();
-
-          return (
-            <ColourPickerComponentBase
-              width={width}
-              height={height}
-              parameters={params_}
-              setParameters={setParams_}
-              readonly={readonly}
-            ></ColourPickerComponentBase>
-          );
-        }}
-      </Context.Consumer>
-    </Context.Provider>
-  );
-};
-
-export default Component;
+export default ColourPickerComponent;

@@ -13,12 +13,9 @@ import {
 } from "@fluentui/react";
 import { useBoolean } from "@fluentui/react-hooks";
 import * as React from "react";
+import { ControlContext } from "../../shared";
 import { IInputs } from "../generated/ManifestTypes";
-import {
-  Context,
-  IEmailFieldControlProps,
-  IEmailFieldProps,
-} from "./EmailFieldComponent.types";
+import { Context, IEmailFieldControlProps } from "./EmailFieldComponent.types";
 
 interface ISelectedEmail extends ITag {
   isValid?: boolean;
@@ -27,10 +24,6 @@ interface ISelectedEmail extends ITag {
 const EmailFieldComponent: React.FC<IEmailFieldControlProps> = ({
   width,
   height,
-  parameters,
-  setParameters,
-  readonly,
-  utils,
 }) => {
   const theme = useTheme();
   const [domainList, setDomainList] = React.useState<string[]>([]);
@@ -40,6 +33,23 @@ const EmailFieldComponent: React.FC<IEmailFieldControlProps> = ({
   const [lastNotifyId, setLastNotifyId] = React.useState<string>();
   const [canCopyToClipboard, { setFalse: disableCopyToClipboard }] =
     useBoolean(true);
+  const service = React.useContext(ControlContext);
+
+  const parameters = service?.getParameters<IInputs>();
+  const setParameters = service?.setParameters.bind(service);
+  const context =
+    service?.getFormContext() as ComponentFramework.Context<IInputs>;
+  const resources = context.resources;
+  const utils = context.utils as any;
+
+  const removeButtonAriaLabel = resources.getString(
+    "EmailField_TagPicker_RemoveButtonAriaLabel"
+  );
+  const selectionAriaLabel = resources.getString(
+    "EmailField_TagPicker_SelectionAriaLabel"
+  );
+  const copyButtonLabel = resources.getString("EmailField_CopyButton_AriaLabel");
+  const composeButtonLabel = resources.getString("EmailField_ComposeButton_AriaLabel");
 
   React.useEffect(() => {
     if (!!parameters) {
@@ -227,7 +237,8 @@ const EmailFieldComponent: React.FC<IEmailFieldControlProps> = ({
           }}
           disabled={isDisabled && !canCopyToClipboard}
           onClick={onCopyClick}
-          label="Copy these e-mail addresses clipboard"
+          label={copyButtonLabel}
+          ariaLabel={copyButtonLabel}
         ></IconButton>
         <IconButton
           iconProps={{
@@ -235,7 +246,8 @@ const EmailFieldComponent: React.FC<IEmailFieldControlProps> = ({
           }}
           disabled={isDisabled}
           onClick={onSendClick}
-          label="Compose an e-mail for these recipients"
+          label={copyButtonLabel}
+          ariaLabel={composeButtonLabel}
         ></IconButton>
       </Stack>
     );
@@ -279,6 +291,8 @@ const EmailFieldComponent: React.FC<IEmailFieldControlProps> = ({
               height: height,
             },
           }}
+          removeButtonAriaLabel={removeButtonAriaLabel}
+          selectionAriaLabel={selectionAriaLabel}
         ></TagPicker>
         {renderSuffix()}
       </Stack>
@@ -288,32 +302,4 @@ const EmailFieldComponent: React.FC<IEmailFieldControlProps> = ({
   return null;
 };
 
-const Component: React.FC<IEmailFieldProps> = ({ width, height, service }) => {
-  return (
-    <Context.Provider value={service}>
-      <Context.Consumer>
-        {(service) => {
-          const params_ = service?.getParameters<IInputs>();
-          const setParams_ = service?.setParameters.bind(service);
-          const readonly = service?.getIsControlReadOnly();
-          const context =
-            service?.getFormContext() as ComponentFramework.Context<IInputs>;
-          const utils = context.utils;
-
-          return (
-            <EmailFieldComponent
-              readonly={readonly}
-              parameters={params_}
-              setParameters={setParams_}
-              utils={utils}
-              width={width}
-              height={height}
-            ></EmailFieldComponent>
-          );
-        }}
-      </Context.Consumer>
-    </Context.Provider>
-  );
-};
-
-export default Component;
+export default EmailFieldComponent;

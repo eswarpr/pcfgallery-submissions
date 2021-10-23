@@ -1,0 +1,32 @@
+diff --git a/node_modules/pcf-start/bin/pcf-start.js b/node_modules/pcf-start/bin/pcf-start.js
+index 3f062c8..63e3286 100644
+--- a/node_modules/pcf-start/bin/pcf-start.js
++++ b/node_modules/pcf-start/bin/pcf-start.js
+@@ -36,16 +36,25 @@ try {
+         resultCode = 400;
+         process.exit(1);
+     }
++    var serverConfig = undefined;
++    if(argv.serverConfig && fs.existsSync(path.resolve(process.cwd(), argv.serverConfig))) {
++        serverConfig = require(path.resolve(process.cwd(), argv.serverConfig));
++    }
++    var host = serverConfig?.hostname || '0.0.0.0';
++    var port = serverConfig?.port || 8181
++    var https = serverConfig?.https
++
+     // Start server
+     var options = {
+-        port: 8181,
+-        host: '0.0.0.0',
++        port: port,
++        host: host,
+         root: path.resolve(process.cwd(), codePath),
+         open: true,
+         ignore: path.join(__dirname, '../node_modules'),
+         file: 'index.html',
+         wait: 1000,
+         mount: [['/', path.join(__dirname, '../')]],
++        https: https,
+         logLevel: 1 // 0 = errors only, 1 = some, 2 = lots
+     };
+     liveServer.start(options);

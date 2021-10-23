@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "src\\controls"
+		},
+		{
+			"path": "src\\solution"
+		},
+		{
+			"path": "src\\docs"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/node_modules": true
+		}
+	}
+}

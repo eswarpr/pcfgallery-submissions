@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest>
-  <control namespace="PCFPowerControls" constructor="EmailField" version="0.1.10" display-name-key="EmailField_Name" description-key="EmailField_Description" control-type="standard">
+  <control namespace="PCFPowerControls" constructor="EmailField" version="0.1.14" display-name-key="EmailField_Name" description-key="EmailField_Description" control-type="standard">
     <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
     If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
     Example1:
@@ -43,7 +43,7 @@
       <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type-group="numbers" usage="bound" required="true" />
     -->
     <resources>
-      <code path="index.ts" order="1" />
+      <code path="index.tsx" order="1" />
       <resx path="strings/EmailField.1033.resx" version="1.0.0" />
       <!-- UNCOMMENT TO ADD MORE RESOURCES
       <css path="css/ColourPicker.css" order="1" />
